@@ -1,0 +1,218 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "document-organizer"
+dynamic = ["version"]
+description = "A powerful Python CLI tool that processes large document collections using Azure OpenAI GPT-4.1"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Document Organizer Contributors", email = "contributors@document-organizer.com"}
+]
+maintainers = [
+    {name = "Document Organizer Contributors", email = "contributors@document-organizer.com"}
+]
+keywords = [
+    "document-processing",
+    "azure-openai", 
+    "gpt-4",
+    "ocr",
+    "medical-records",
+    "document-organization",
+    "text-processing",
+    "ai",
+    "nlp",
+    "healthcare",
+    "automation"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: End Users/Desktop", 
+    "Intended Audience :: Information Technology",
+    "Topic :: Office/Business :: Office Suites",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: General",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Natural Language :: English"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "aiohttp>=3.8.0,<4.0.0",
+    "asyncio-throttle>=1.0.0,<2.0.0",
+    "backoff>=2.2.0,<3.0.0",
+    "tiktoken>=0.5.0,<1.0.0",
+    "python-dateutil>=2.8.0,<3.0.0"
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.10,<1.0.0",
+    "Pillow>=9.0.0,<11.0.0", 
+    "pdf2image>=3.1.0,<4.0.0"
+]
+output = [
+    "python-docx>=0.8.11,<1.0.0"
+]
+ui = [
+    "tqdm>=4.64.0,<5.0.0"
+]
+performance = [
+    "psutil>=5.9.0,<6.0.0"
+]
+dev = [
+    "pytest>=7.0.0,<8.0.0",
+    "pytest-cov>=4.0.0,<5.0.0",
+    "pytest-mock>=3.10.0,<4.0.0",
+    "pytest-asyncio>=0.21.0,<1.0.0",
+    "black>=22.0.0,<24.0.0",
+    "flake8>=5.0.0,<7.0.0",
+    "mypy>=1.0.0,<2.0.0",
+    "safety>=2.0.0,<3.0.0",
+    "bandit>=1.7.0,<2.0.0"
+]
+all = [
+    "document-organizer[ocr,output,ui,performance]"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/document-organizer"
+Documentation = "https://github.com/yourusername/document-organizer#readme"
+Repository = "https://github.com/yourusername/document-organizer"
+"Bug Reports" = "https://github.com/yourusername/document-organizer/issues"
+Changelog = "https://github.com/yourusername/document-organizer/blob/main/CHANGELOG.md"
+
+[project.scripts]
+document-organizer = "organizer:main"
+doc-organizer = "organizer:main"
+
+[tool.setuptools]
+packages = ["organizer", "utils"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.json", "*.yml", "*.yaml"]
+
+[tool.setuptools_scm]
+write_to = "organizer/_version.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox"
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pytesseract.*",
+    "pdf2image.*", 
+    "docx.*",
+    "PyPDF2.*",
+    "psutil.*",
+    "tqdm.*",
+    "tiktoken.*"
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "ocr: marks tests that require OCR dependencies",
+    "api: marks tests that require API access"
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning"
+]
+
+[tool.coverage.run]
+source = ["utils", "organizer"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/build/*",
+    "*/dist/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]
+show_missing = true
+precision = 2
+
+[tool.bandit]
+exclude_dirs = ["tests", "build", "dist"]
+skips = ["B101", "B601"]
+
+[tool.safety]
+ignore = []
+full_report = true

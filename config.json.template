@@ -1,0 +1,13 @@
+{
+  "azure_openai": {
+    "endpoint": "https://your-resource.openai.azure.com/",
+    "api_key": "your-api-key-here",
+    "deployment_name": "gpt-4-1106-preview",
+    "api_version": "2024-02-15-preview"
+  },
+  "processing": {
+    "max_concurrent_requests": 10,
+    "chunk_size_tokens": 8000,
+    "retry_attempts": 3
+  }
+}
