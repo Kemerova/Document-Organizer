@@ -34,12 +34,12 @@ setup(
     description="A powerful Python CLI tool that processes large document collections using Azure OpenAI GPT-4.1",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/document-organizer",
+    url="https://github.com/Kemerova/document-organizer",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/document-organizer/issues",
-        "Source": "https://github.com/yourusername/document-organizer",
-        "Documentation": "https://github.com/yourusername/document-organizer#readme",
-        "Changelog": "https://github.com/yourusername/document-organizer/blob/main/CHANGELOG.md",
+        "Bug Reports": "https://github.com/Kemerova/document-organizer/issues",
+        "Source": "https://github.com/Kemerova/document-organizer",
+        "Documentation": "https://github.com/Kemerova/document-organizer#readme",
+        "Changelog": "https://github.com/Kemerova/document-organizer/blob/main/CHANGELOG.md",
     },
     packages=find_packages(),
     classifiers=[

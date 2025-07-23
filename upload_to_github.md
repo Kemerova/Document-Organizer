@@ -33,8 +33,8 @@ git commit -m "feat: initial release of Document Organizer v1.0.0
 # 4. Set main branch
 git branch -M main
 
-# 5. Add remote origin (REPLACE yourusername with your GitHub username)
-git remote add origin https://github.com/yourusername/document-organizer.git
+# 5. Add remote origin
+git remote add origin https://github.com/Kemerova/document-organizer.git
 
 # 6. Push to GitHub
 git push -u origin main
@@ -63,7 +63,7 @@ git push -u origin main
 
 ### If remote already exists:
 ```bash
-git remote set-url origin https://github.com/yourusername/document-organizer.git
+git remote set-url origin https://github.com/Kemerova/document-organizer.git
 ```
 
 ### If you need to force push (use carefully):
@@ -73,7 +73,7 @@ git push -u origin main --force
 
 ## After Upload
 
-1. Go to your repository: https://github.com/yourusername/document-organizer
+1. Go to your repository: https://github.com/Kemerova/document-organizer
 2. Verify all files are uploaded
 3. Check that GitHub Actions are running
 4. Enable Issues and Wiki in Settings

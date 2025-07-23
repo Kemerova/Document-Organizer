@@ -85,11 +85,11 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/document-organizer"
-Documentation = "https://github.com/yourusername/document-organizer#readme"
-Repository = "https://github.com/yourusername/document-organizer"
-"Bug Reports" = "https://github.com/yourusername/document-organizer/issues"
-Changelog = "https://github.com/yourusername/document-organizer/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Kemerova/document-organizer"
+Documentation = "https://github.com/Kemerova/document-organizer#readme"
+Repository = "https://github.com/Kemerova/document-organizer"
+"Bug Reports" = "https://github.com/Kemerova/document-organizer/issues"
+Changelog = "https://github.com/Kemerova/document-organizer/blob/main/CHANGELOG.md"
 
 [project.scripts]
 document-organizer = "organizer:main"
