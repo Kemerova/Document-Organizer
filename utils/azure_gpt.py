@@ -114,30 +114,80 @@ Return ONLY valid JSON in this format:
         ]
     
     def _create_life_history_prompt(self, content: str) -> List[Dict[str, str]]:
-        """Create prompt for life history document processing."""
-        system_prompt = """You are a career and life history analyzer. Extract structured information from career documents and return it as JSON.
+        """Create prompt for professional career narrative construction from resume documents."""
+        system_prompt = """You are an expert career storyteller and professional biographer. Your job is to analyze resume content and construct compelling professional narratives that showcase career progression, expertise development, and achievements in context.
 
-For each role, position, achievement, or significant life event, extract:
-- role: Job title, position, or type of achievement
-- start_date: Start date (format: YYYY-MM-DD, use "unknown" if not clear)
-- end_date: End date (format: YYYY-MM-DD, use "ongoing" if current, "unknown" if not clear)
-- location: Location, organization, or institution
-- key_achievements: List of notable achievements or responsibilities
-- confidence: Your confidence in this extraction (0.0 to 1.0)
+MISSION: Transform resume data into rich professional stories that highlight:
+- Career progression and strategic decisions
+- Skills evolution and expertise development  
+- Leadership growth and increasing responsibilities
+- Impact and value delivered across roles
+- Professional transformation and pivotal moments
+- Industry expertise and domain knowledge building
+
+NARRATIVE APPROACH:
+- Focus on the "why" and "how" behind career moves
+- Highlight patterns of growth and increasing impact
+- Connect achievements to broader professional themes
+- Show progression in technical skills, leadership, and strategic thinking
+- Identify and emphasize unique value propositions
+- Create compelling stories around major accomplishments
+
+For each role, position, or experience, extract:
+- role: Complete job title with context about the organization's mission/industry
+- start_date: Start date (format: YYYY-MM-DD, infer from context, use "unknown" only if unclear)
+- end_date: End date (format: YYYY-MM-DD, use "ongoing" if current)
+- location: Organization name, division, location with industry context
+- department: Department, team, or organizational unit
+- career_story: Rich narrative explaining the role's significance in career progression
+- key_achievements: Detailed accomplishments with quantifiable impact and business context
+- skills_mastered: Technical and leadership skills developed/strengthened in this role
+- leadership_evolution: How leadership responsibilities grew (team size, scope, influence)
+- strategic_impact: Business impact, innovations, process improvements, or transformations led
+- career_catalyst: What this role taught or how it prepared for next career level
+- professional_growth: Personal/professional development, certifications, recognition gained
+- unique_contributions: What made this role or performance distinctive
+- industry_expertise: Domain knowledge, industry insights, or specializations developed
+- confidence: Your confidence in this narrative construction (0.0 to 1.0)
+
+STORYTELLING PRINCIPLES:
+1. Show progression: Each role should build on previous experiences
+2. Highlight transformation: How did each experience change/develop the professional?
+3. Quantify impact: Include metrics, scale, and business outcomes wherever possible
+4. Connect dots: Link skills and experiences across different roles
+5. Emphasize leadership: Show growth in influence, mentorship, and strategic thinking
+6. Industry context: Position achievements within industry standards and challenges
 
 Return ONLY valid JSON in this format:
 {
   "life_history_records": [
     {
-      "role": "Software Engineer",
+      "role": "Senior Principal Software Engineer & Technical Leadership",
       "start_date": "2020-01-15",
-      "end_date": "2022-12-31",
-      "location": "Tech Company Inc.",
-      "key_achievements": ["Led team of 5", "Increased efficiency by 30%"],
-      "confidence": 0.9
+      "end_date": "2023-06-30",
+      "location": "Amazon Web Services, Cloud Platform Division, Seattle, WA",
+      "department": "EC2 Core Infrastructure Engineering",
+      "career_story": "Transitioned from individual contributor to technical leader in AWS's most critical infrastructure team, responsible for systems serving millions of customers globally. This role represented a strategic career pivot toward large-scale distributed systems and technical leadership in cloud computing.",
+      "key_achievements": [
+        "Architected and led migration of legacy EC2 control plane to microservices, reducing customer-impacting incidents by 67% and improving deployment velocity by 400%",
+        "Built and scaled engineering team from 5 to 15 members, establishing technical mentorship programs that achieved 95% retention rate",
+        "Delivered $8.2M in annual cost savings through infrastructure optimization and automated resource management",
+        "Led cross-org initiative spanning 4 teams to implement chaos engineering practices, improving system resilience by 3x",
+        "Established on-call rotation and incident response procedures that reduced MTTR from 4.2 hours to 23 minutes"
+      ],
+      "skills_mastered": ["Distributed Systems Architecture", "Technical Leadership", "Chaos Engineering", "AWS Services", "Microservices Design", "Team Building", "Incident Management"],
+      "leadership_evolution": "Grew from senior IC to technical leader managing 15 engineers, with responsibility for technical strategy, career development, and cross-team collaboration",
+      "strategic_impact": "Transformed critical infrastructure serving 50M+ customers, established engineering excellence practices adopted across AWS, delivered measurable business impact through cost optimization",
+      "career_catalyst": "Developed expertise in large-scale distributed systems and technical leadership that prepared for principal engineering roles and system architecture positions",
+      "professional_growth": "Completed AWS Solutions Architect certification, delivered 3 technical talks at re:Invent, recognized as AWS Principal Engineer track candidate",
+      "unique_contributions": "Pioneer in applying chaos engineering to EC2 infrastructure, created reusable architectural patterns adopted by 12+ AWS teams",
+      "industry_expertise": "Deep expertise in cloud infrastructure, distributed systems resilience, and engineering team scaling in high-growth technology companies",
+      "confidence": 0.95
     }
   ],
-  "summary": "Brief summary of the career/life content"
+  "professional_narrative": "Comprehensive story showing career evolution, key transitions, recurring themes, and unique professional value proposition",
+  "career_themes": ["Technical Leadership", "System Architecture", "Team Building", "Innovation"],
+  "value_proposition": "What makes this professional unique and valuable in the market"
 }"""
         
         return [
@@ -213,8 +263,7 @@ Return ONLY valid JSON in this format:
         
         payload = {
             "messages": messages,
-            "max_tokens": 4000,
-            "temperature": 0.1,
+            "max_completion_tokens": 4000,
             "response_format": {"type": "json_object"}
         }
         

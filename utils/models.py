@@ -143,12 +143,21 @@ class MedicalRecord:
 
 @dataclass
 class LifeHistoryRecord:
-    """Represents a life history/career record entry."""
+    """Represents a comprehensive professional career story entry."""
     role: str
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     location: str = ""
+    department: str = ""
+    career_story: str = ""
     key_achievements: List[str] = field(default_factory=list)
+    skills_mastered: List[str] = field(default_factory=list)
+    leadership_evolution: str = ""
+    strategic_impact: str = ""
+    career_catalyst: str = ""
+    professional_growth: str = ""
+    unique_contributions: str = ""
+    industry_expertise: str = ""
     source_files: List[str] = field(default_factory=list)
     page_references: List[int] = field(default_factory=list)
     confidence_score: float = 0.0
@@ -165,6 +174,8 @@ class LifeHistoryRecord:
             return False
         if not isinstance(self.key_achievements, list):
             return False
+        if not isinstance(self.skills_mastered, list):
+            return False
         if self.confidence_score < 0 or self.confidence_score > 1:
             return False
         return True
@@ -176,7 +187,16 @@ class LifeHistoryRecord:
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'location': self.location,
+            'department': self.department,
+            'career_story': self.career_story,
             'key_achievements': self.key_achievements,
+            'skills_mastered': self.skills_mastered,
+            'leadership_evolution': self.leadership_evolution,
+            'strategic_impact': self.strategic_impact,
+            'career_catalyst': self.career_catalyst,
+            'professional_growth': self.professional_growth,
+            'unique_contributions': self.unique_contributions,
+            'industry_expertise': self.industry_expertise,
             'source_files': self.source_files,
             'page_references': self.page_references,
             'confidence_score': self.confidence_score
@@ -198,7 +218,16 @@ class LifeHistoryRecord:
             start_date=start_date,
             end_date=end_date,
             location=data.get('location', ''),
+            department=data.get('department', ''),
+            career_story=data.get('career_story', ''),
             key_achievements=data.get('key_achievements', []),
+            skills_mastered=data.get('skills_mastered', []),
+            leadership_evolution=data.get('leadership_evolution', ''),
+            strategic_impact=data.get('strategic_impact', ''),
+            career_catalyst=data.get('career_catalyst', ''),
+            professional_growth=data.get('professional_growth', ''),
+            unique_contributions=data.get('unique_contributions', ''),
+            industry_expertise=data.get('industry_expertise', ''),
             source_files=data.get('source_files', []),
             page_references=data.get('page_references', []),
             confidence_score=data.get('confidence_score', 0.0)

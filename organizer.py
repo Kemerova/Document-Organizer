@@ -292,18 +292,18 @@ async def process_documents(args: argparse.Namespace) -> None:
                 doc_content = file_loader.load_file(file_path)
                 
                 # Apply OCR if needed and available
-                if ocr_processor and not doc_content['content'].strip():
+                if ocr_processor and not doc_content.content.strip():
                     try:
                         ocr_text, confidence, pages, ocr_applied = ocr_processor.process_file(file_path)
                         if ocr_applied and ocr_text.strip():
-                            doc_content['content'] = ocr_text
-                            doc_content['ocr_applied'] = True
-                            doc_content['extraction_confidence'] = confidence
+                            doc_content.content = ocr_text
+                            doc_content.ocr_applied = True
+                            doc_content.extraction_confidence = confidence
                             logger.info(f"OCR applied to {file_path}: {confidence:.2f} confidence")
                     except Exception as e:
                         logger.warning(f"OCR failed for {file_path}: {e}")
                 
-                if doc_content['content'].strip():
+                if doc_content.content.strip():
                     documents.append(doc_content)
                 else:
                     logger.warning(f"No content extracted from {file_path}")

@@ -181,7 +181,7 @@ class TokenAwareChunker:
         chunk_index = 0
         
         # First pass: estimate total chunks needed
-        total_tokens = sum(self.count_tokens(doc['content']) for doc in documents)
+        total_tokens = sum(self.count_tokens(doc.content) for doc in documents)
         estimated_chunks = max(1, (total_tokens + self.effective_max_tokens - 1) // self.effective_max_tokens)
         
         logger.info(f"Chunking {len(documents)} documents with ~{total_tokens} total tokens "
@@ -193,9 +193,9 @@ class TokenAwareChunker:
         current_boundaries = []
         
         for doc in documents:
-            filename = doc['filename']
-            content = doc['content']
-            page_numbers = doc.get('page_numbers', [1])
+            filename = doc.filename
+            content = doc.content
+            page_numbers = getattr(doc, 'page_numbers', [1])
             
             if not content.strip():
                 logger.warning(f"Skipping empty document: {filename}")

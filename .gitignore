@@ -161,6 +161,7 @@ cython_debug/
 # Document Organizer specific
 config.json
 logs/
+input/
 output/
 temp/
 *.tmp
