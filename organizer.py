@@ -79,14 +79,17 @@ def parse_arguments() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Process medical records
-  python organizer.py --mode medical --input ./medical_docs --output ./results
+  # Process medical records (uses ./input by default)
+  python organizer.py --mode medical
 
   # Process life history documents with custom settings
-  python organizer.py --mode life --input ./career_docs --threads 5 --config custom_config.json
+  python organizer.py --mode life --threads 5 --config custom_config.json
 
   # Review and improve code repositories
-  python organizer.py --mode code --input ./my_project --output ./code_review
+  python organizer.py --mode code
+
+  # Use custom input directory
+  python organizer.py --mode medical --input ./my_documents --output ./results
 
   # Generate configuration template
   python organizer.py --create-config
@@ -105,7 +108,8 @@ Examples:
     parser.add_argument(
         '--input', '-i',
         type=str,
-        help='Input directory containing documents to process'
+        default='input',
+        help='Input directory containing documents to process (default: input)'
     )
     
     parser.add_argument(
@@ -245,7 +249,7 @@ async def process_documents(args: argparse.Namespace) -> None:
         
         # Initialize components
         file_loader = FileLoader()
-        output_writer = OutputWriter(args.output)
+        output_writer = OutputWriter(args.output, args.mode)
         
         # Initialize OCR if available and not disabled
         ocr_processor = None
@@ -422,10 +426,6 @@ def main() -> None:
     # Validate required arguments
     if not args.mode:
         print("Error: --mode is required (medical, life, or code)")
-        sys.exit(1)
-    
-    if not args.input:
-        print("Error: --input directory is required")
         sys.exit(1)
     
     # Set up logging

@@ -34,26 +34,23 @@ class OutputError(Exception):
 class OutputWriter:
     """Handles multi-format output generation."""
     
-    def __init__(self, output_dir: str = "output"):
+    def __init__(self, output_dir: str = "output", mode: str = "general"):
         """
         Initialize the output writer.
         
         Args:
             output_dir: Base output directory
+            mode: Processing mode (medical, life, code) for organizing output
         """
         self.output_dir = Path(output_dir)
+        self.mode = mode.capitalize() if mode else "General"
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Create output subdirectories
-        self.md_dir = self.output_dir / "md"
-        self.docx_dir = self.output_dir / "docx"
-        self.csv_dir = self.output_dir / "csv"
-        self.json_dir = self.output_dir / "json"
+        # Create mode-specific output directory
+        self.mode_dir = self.output_dir / self.mode
+        self.mode_dir.mkdir(parents=True, exist_ok=True)
         
-        for dir_path in [self.md_dir, self.docx_dir, self.csv_dir, self.json_dir]:
-            dir_path.mkdir(parents=True, exist_ok=True)
-        
-        logger.info(f"Initialized output writer with base directory: {self.output_dir}")
+        logger.info(f"Initialized output writer with base directory: {self.output_dir}/{self.mode}")
     
     def write_all_formats(self, consolidated_data: ConsolidatedData, 
                          mode: str, outline_data: Dict[str, Any],
@@ -130,7 +127,7 @@ class OutputWriter:
     
     def write_outline(self, outline_data: Dict[str, Any], mode: str) -> List[str]:
         """Write document collection outline."""
-        outline_file = self.md_dir / f"outline_{mode}_{self.timestamp}.md"
+        outline_file = self.mode_dir / f"outline_{mode}_{self.timestamp}.md"
         
         try:
             with open(outline_file, 'w', encoding='utf-8') as f:
@@ -182,7 +179,7 @@ class OutputWriter:
     
     def write_medical_markdown(self, data: ConsolidatedData) -> List[str]:
         """Write medical data to Markdown format."""
-        md_file = self.md_dir / f"medical_summary_{self.timestamp}.md"
+        md_file = self.mode_dir / f"medical_summary_{self.timestamp}.md"
         
         try:
             with open(md_file, 'w', encoding='utf-8') as f:
@@ -242,7 +239,7 @@ class OutputWriter:
     
     def write_life_markdown(self, data: ConsolidatedData) -> List[str]:
         """Write life history data to Markdown format."""
-        md_file = self.md_dir / f"life_history_{self.timestamp}.md"
+        md_file = self.mode_dir / f"life_history_{self.timestamp}.md"
         
         try:
             with open(md_file, 'w', encoding='utf-8') as f:
@@ -300,7 +297,7 @@ class OutputWriter:
     
     def write_medical_csv(self, data: ConsolidatedData) -> List[str]:
         """Write medical data to CSV format."""
-        csv_file = self.csv_dir / f"medical_records_{self.timestamp}.csv"
+        csv_file = self.mode_dir / f"medical_records_{self.timestamp}.csv"
         
         try:
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
@@ -337,7 +334,7 @@ class OutputWriter:
     
     def write_life_csv(self, data: ConsolidatedData) -> List[str]:
         """Write life history data to CSV format."""
-        csv_file = self.csv_dir / f"life_history_{self.timestamp}.csv"
+        csv_file = self.mode_dir / f"life_history_{self.timestamp}.csv"
         
         try:
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
@@ -379,7 +376,7 @@ class OutputWriter:
             logger.warning("python-docx not available, skipping DOCX generation")
             return []
         
-        docx_file = self.docx_dir / f"medical_summary_{self.timestamp}.docx"
+        docx_file = self.mode_dir / f"medical_summary_{self.timestamp}.docx"
         
         try:
             doc = Document()
@@ -428,7 +425,7 @@ class OutputWriter:
                 
                 doc.add_page_break()
             
-            doc.save(docx_file)
+            doc.save(str(docx_file))
             logger.info(f"Generated medical DOCX: {docx_file}")
             return [str(docx_file)]
             
@@ -442,7 +439,7 @@ class OutputWriter:
             logger.warning("python-docx not available, skipping DOCX generation")
             return []
         
-        docx_file = self.docx_dir / f"life_history_{self.timestamp}.docx"
+        docx_file = self.mode_dir / f"life_history_{self.timestamp}.docx"
         
         try:
             doc = Document()
@@ -492,7 +489,7 @@ class OutputWriter:
                 
                 doc.add_page_break()
             
-            doc.save(docx_file)
+            doc.save(str(docx_file))
             logger.info(f"Generated life history DOCX: {docx_file}")
             return [str(docx_file)]
             
@@ -502,7 +499,7 @@ class OutputWriter:
     
     def backup_json_responses(self, responses: List[GPTResponse], mode: str) -> List[str]:
         """Backup raw GPT responses to JSON."""
-        json_file = self.json_dir / f"raw_responses_{mode}_{self.timestamp}.json"
+        json_file = self.mode_dir / f"raw_responses_{mode}_{self.timestamp}.json"
         
         try:
             backup_data = {
@@ -536,7 +533,7 @@ class OutputWriter:
     
     def write_processing_metadata(self, data: ConsolidatedData, mode: str) -> List[str]:
         """Write processing metadata to JSON."""
-        metadata_file = self.json_dir / f"processing_metadata_{mode}_{self.timestamp}.json"
+        metadata_file = self.mode_dir / f"processing_metadata_{mode}_{self.timestamp}.json"
         
         try:
             metadata = {
@@ -567,7 +564,7 @@ class OutputWriter:
 
     def write_code_markdown(self, data: ConsolidatedData) -> List[str]:
         """Write code review analysis to Markdown format."""
-        md_file = self.md_dir / f"code_review_{self.timestamp}.md"
+        md_file = self.mode_dir / f"code_review_{self.timestamp}.md"
         md_file.parent.mkdir(parents=True, exist_ok=True)
         
         with open(md_file, 'w', encoding='utf-8') as f:
@@ -620,7 +617,7 @@ class OutputWriter:
 
     def write_code_csv(self, data: ConsolidatedData) -> List[str]:
         """Write code review data to CSV format."""
-        csv_file = self.csv_dir / f"code_review_{self.timestamp}.csv"
+        csv_file = self.mode_dir / f"code_review_{self.timestamp}.csv"
         csv_file.parent.mkdir(parents=True, exist_ok=True)
         
         with open(csv_file, 'w', newline='', encoding='utf-8') as f:
@@ -659,7 +656,7 @@ class OutputWriter:
             logger.warning("python-docx not available, skipping DOCX generation")
             return []
         
-        docx_file = self.docx_dir / f"code_review_{self.timestamp}.docx"
+        docx_file = self.mode_dir / f"code_review_{self.timestamp}.docx"
         docx_file.parent.mkdir(parents=True, exist_ok=True)
         
         doc = Document()
