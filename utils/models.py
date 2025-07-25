@@ -338,6 +338,86 @@ class ChunkMetadata:
         }
 
 
+@dataclass
+class CodeReviewRecord:
+    """Represents a code review analysis and improvement recommendations."""
+    file_name: str
+    language: str = ""
+    overall_quality: str = ""
+    quality_score: float = 0.0
+    security_issues: List[Dict[str, Any]] = field(default_factory=list)
+    performance_issues: List[Dict[str, Any]] = field(default_factory=list)
+    best_practice_violations: List[Dict[str, Any]] = field(default_factory=list)
+    architecture_suggestions: List[Dict[str, Any]] = field(default_factory=list)
+    testing_recommendations: List[Dict[str, Any]] = field(default_factory=list)
+    documentation_gaps: List[Dict[str, Any]] = field(default_factory=list)
+    refactoring_opportunities: List[Dict[str, Any]] = field(default_factory=list)
+    positive_aspects: List[str] = field(default_factory=list)
+    improvement_priority: str = ""
+    estimated_effort: str = ""
+    source_files: List[str] = field(default_factory=list)
+    confidence: float = 0.0
+    
+    def validate(self) -> bool:
+        """Validate code review record structure."""
+        if not self.file_name or not isinstance(self.file_name, str):
+            return False
+        if self.quality_score < 0 or self.quality_score > 10:
+            return False
+        if self.confidence < 0 or self.confidence > 1:
+            return False
+        if not isinstance(self.security_issues, list):
+            return False
+        if not isinstance(self.performance_issues, list):
+            return False
+        if not isinstance(self.source_files, list):
+            return False
+        return True
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            'file_name': self.file_name,
+            'language': self.language,
+            'overall_quality': self.overall_quality,
+            'quality_score': self.quality_score,
+            'security_issues': self.security_issues,
+            'performance_issues': self.performance_issues,
+            'best_practice_violations': self.best_practice_violations,
+            'architecture_suggestions': self.architecture_suggestions,
+            'testing_recommendations': self.testing_recommendations,
+            'documentation_gaps': self.documentation_gaps,
+            'refactoring_opportunities': self.refactoring_opportunities,
+            'positive_aspects': self.positive_aspects,
+            'improvement_priority': self.improvement_priority,
+            'estimated_effort': self.estimated_effort,
+            'source_files': self.source_files,
+            'confidence': self.confidence
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'CodeReviewRecord':
+        """Create CodeReviewRecord from dictionary."""
+        return cls(
+            file_name=data.get('file_name', ''),
+            language=data.get('language', ''),
+            overall_quality=data.get('overall_quality', ''),
+            quality_score=data.get('quality_score', 0.0),
+            security_issues=data.get('security_issues', []),
+            performance_issues=data.get('performance_issues', []),
+            best_practice_violations=data.get('best_practice_violations', []),
+            architecture_suggestions=data.get('architecture_suggestions', []),
+            testing_recommendations=data.get('testing_recommendations', []),
+            documentation_gaps=data.get('documentation_gaps', []),
+            refactoring_opportunities=data.get('refactoring_opportunities', []),
+            positive_aspects=data.get('positive_aspects', []),
+            improvement_priority=data.get('improvement_priority', ''),
+            estimated_effort=data.get('estimated_effort', ''),
+            source_files=data.get('source_files', []),
+            confidence=data.get('confidence', 0.0)
+        )
+
+
 def save_json_backup(data: Any, filepath: str) -> None:
     """Save data as JSON backup with proper formatting."""
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)

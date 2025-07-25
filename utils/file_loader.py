@@ -18,8 +18,17 @@ from .models import DocumentContent
 logger = logging.getLogger(__name__)
 
 # Supported file extensions
-SUPPORTED_EXTENSIONS = {'.txt', '.docx', '.pdf', '.jpg', '.jpeg', '.png'}
-TEXT_EXTENSIONS = {'.txt'}
+SUPPORTED_EXTENSIONS = {'.txt', '.docx', '.pdf', '.jpg', '.jpeg', '.png', 
+                       '.py', '.js', '.ts', '.java', '.cpp', '.c', '.h', '.hpp', 
+                       '.cs', '.go', '.rs', '.php', '.rb', '.swift', '.kt', '.scala',
+                       '.html', '.css', '.scss', '.less', '.jsx', '.tsx', '.vue',
+                       '.json', '.xml', '.yaml', '.yml', '.toml', '.ini', '.cfg',
+                       '.sh', '.bat', '.ps1', '.dockerfile', '.md', '.rst', '.sql'}
+TEXT_EXTENSIONS = {'.txt', '.py', '.js', '.ts', '.java', '.cpp', '.c', '.h', '.hpp', 
+                  '.cs', '.go', '.rs', '.php', '.rb', '.swift', '.kt', '.scala',
+                  '.html', '.css', '.scss', '.less', '.jsx', '.tsx', '.vue',
+                  '.json', '.xml', '.yaml', '.yml', '.toml', '.ini', '.cfg',
+                  '.sh', '.bat', '.ps1', '.dockerfile', '.md', '.rst', '.sql'}
 DOCX_EXTENSIONS = {'.docx'}
 PDF_EXTENSIONS = {'.pdf'}
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png'}

@@ -12,7 +12,7 @@ import re
 from difflib import SequenceMatcher
 
 from .azure_gpt import GPTResponse
-from .models import MedicalRecord, LifeHistoryRecord
+from .models import MedicalRecord, LifeHistoryRecord, CodeReviewRecord
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ class ConsolidatedData:
     """Container for consolidated and deduplicated data."""
     medical_records: List[MedicalRecord] = field(default_factory=list)
     life_history_records: List[LifeHistoryRecord] = field(default_factory=list)
+    code_review_records: List[CodeReviewRecord] = field(default_factory=list)
     summaries: List[str] = field(default_factory=list)
     source_files: Set[str] = field(default_factory=set)
     processing_metadata: Dict[str, Any] = field(default_factory=dict)
@@ -139,13 +140,16 @@ class DataProcessor:
             consolidated.medical_records = self._consolidate_medical_data(responses)
         elif mode == 'life':
             consolidated.life_history_records = self._consolidate_life_data(responses)
+        elif mode == 'code':
+            consolidated.code_review_records = self._consolidate_code_data(responses)
         else:
             logger.error(f"Unknown consolidation mode: {mode}")
         
         consolidated.deduplication_log = self.deduplication_log.copy()
         
         logger.info(f"Consolidation complete: {len(consolidated.medical_records)} medical records, "
-                   f"{len(consolidated.life_history_records)} life records")
+                   f"{len(consolidated.life_history_records)} life records, "
+                   f"{len(consolidated.code_review_records)} code review records")
         
         return consolidated
     
@@ -392,6 +396,119 @@ class DataProcessor:
             source_files=sorted(list(all_source_files)),
             page_references=sorted(list(all_page_refs)),
             confidence_score=avg_confidence
+        )
+    
+    def _consolidate_code_data(self, responses: List[GPTResponse]) -> List[CodeReviewRecord]:
+        """Consolidate code review data from GPT responses."""
+        all_records = []
+        
+        # Extract all code review records from responses
+        for response in responses:
+            if 'error' in response.structured_data:
+                continue
+            
+            records = response.structured_data.get('code_reviews', [])
+            for record_data in records:
+                try:
+                    record = CodeReviewRecord(
+                        file_name=record_data.get('file_name', '').strip(),
+                        language=record_data.get('language', '').strip(),
+                        overall_quality=record_data.get('overall_quality', '').strip(),
+                        quality_score=float(record_data.get('quality_score', 0.0)),
+                        security_issues=record_data.get('security_issues', []),
+                        performance_issues=record_data.get('performance_issues', []),
+                        best_practice_violations=record_data.get('best_practice_violations', []),
+                        architecture_suggestions=record_data.get('architecture_suggestions', []),
+                        testing_recommendations=record_data.get('testing_recommendations', []),
+                        documentation_gaps=record_data.get('documentation_gaps', []),
+                        refactoring_opportunities=record_data.get('refactoring_opportunities', []),
+                        positive_aspects=record_data.get('positive_aspects', []),
+                        improvement_priority=record_data.get('improvement_priority', '').strip(),
+                        estimated_effort=record_data.get('estimated_effort', '').strip(),
+                        source_files=response.source_references.copy(),
+                        confidence=float(record_data.get('confidence', 0.5))
+                    )
+                    
+                    if record.file_name:  # Only add records with file names
+                        all_records.append(record)
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to parse code review record: {e}")
+                    continue
+        
+        # For code reviews, we typically don't deduplicate as each file should have its own review
+        # But we could merge reviews for the same file if needed
+        return self._deduplicate_code_records(all_records)
+    
+    def _deduplicate_code_records(self, records: List[CodeReviewRecord]) -> List[CodeReviewRecord]:
+        """Deduplicate code review records by merging reviews for the same file."""
+        if not records:
+            return []
+        
+        # Group by file name
+        file_groups = defaultdict(list)
+        for record in records:
+            file_groups[record.file_name].append(record)
+        
+        deduplicated = []
+        for file_name, file_records in file_groups.items():
+            if len(file_records) == 1:
+                deduplicated.append(file_records[0])
+            else:
+                # Merge multiple reviews for the same file
+                merged_record = self._merge_code_records(file_records)
+                deduplicated.append(merged_record)
+                self.deduplication_log.append(f"Merged {len(file_records)} code review records for file: {file_name}")
+        
+        return deduplicated
+    
+    def _merge_code_records(self, records: List[CodeReviewRecord]) -> CodeReviewRecord:
+        """Merge multiple code review records for the same file."""
+        base_record = records[0]
+        
+        # Merge all issues and recommendations
+        all_security_issues = []
+        all_performance_issues = []
+        all_best_practice_violations = []
+        all_architecture_suggestions = []
+        all_testing_recommendations = []
+        all_documentation_gaps = []
+        all_refactoring_opportunities = []
+        all_positive_aspects = set()
+        all_source_files = set()
+        
+        for record in records:
+            all_security_issues.extend(record.security_issues)
+            all_performance_issues.extend(record.performance_issues)
+            all_best_practice_violations.extend(record.best_practice_violations)
+            all_architecture_suggestions.extend(record.architecture_suggestions)
+            all_testing_recommendations.extend(record.testing_recommendations)
+            all_documentation_gaps.extend(record.documentation_gaps)
+            all_refactoring_opportunities.extend(record.refactoring_opportunities)
+            all_positive_aspects.update(record.positive_aspects)
+            all_source_files.update(record.source_files)
+        
+        # Calculate average quality score and confidence
+        avg_quality_score = sum(r.quality_score for r in records) / len(records)
+        avg_confidence = sum(r.confidence for r in records) / len(records)
+        
+        return CodeReviewRecord(
+            file_name=base_record.file_name,
+            language=base_record.language,
+            overall_quality=base_record.overall_quality,
+            quality_score=avg_quality_score,
+            security_issues=all_security_issues,
+            performance_issues=all_performance_issues,
+            best_practice_violations=all_best_practice_violations,
+            architecture_suggestions=all_architecture_suggestions,
+            testing_recommendations=all_testing_recommendations,
+            documentation_gaps=all_documentation_gaps,
+            refactoring_opportunities=all_refactoring_opportunities,
+            positive_aspects=sorted(list(all_positive_aspects)),
+            improvement_priority=base_record.improvement_priority,
+            estimated_effort=base_record.estimated_effort,
+            source_files=sorted(list(all_source_files)),
+            confidence=avg_confidence
         )
     
     def get_deduplication_summary(self) -> Dict[str, Any]:

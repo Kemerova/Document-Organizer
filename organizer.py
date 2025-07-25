@@ -85,6 +85,9 @@ Examples:
   # Process life history documents with custom settings
   python organizer.py --mode life --input ./career_docs --threads 5 --config custom_config.json
 
+  # Review and improve code repositories
+  python organizer.py --mode code --input ./my_project --output ./code_review
+
   # Generate configuration template
   python organizer.py --create-config
 
@@ -95,8 +98,8 @@ Examples:
     
     parser.add_argument(
         '--mode',
-        choices=['medical', 'life'],
-        help='Processing mode: medical records or life history documents'
+        choices=['medical', 'life', 'code'],
+        help='Processing mode: medical records, life history documents, or code review'
     )
     
     parser.add_argument(

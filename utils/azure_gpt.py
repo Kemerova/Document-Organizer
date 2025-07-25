@@ -195,6 +195,119 @@ Return ONLY valid JSON in this format:
             {"role": "user", "content": f"Analyze this career/life document content:\n\n{content}"}
         ]
     
+    def _create_code_review_prompt(self, content: str) -> List[Dict[str, str]]:
+        """Create prompt for code review and improvement analysis."""
+        system_prompt = """You are a senior software engineer and code reviewer with expertise across multiple programming languages and best practices. Analyze the provided code and identify opportunities for improvement.
+
+For each piece of code, provide:
+1. **Code Quality Assessment** - Overall quality, readability, maintainability
+2. **Best Practices Analysis** - Adherence to language-specific conventions
+3. **Security Vulnerabilities** - Potential security issues and fixes
+4. **Performance Optimizations** - Areas for performance improvement
+5. **Architecture Recommendations** - Structural and design pattern suggestions
+6. **Testing Recommendations** - Missing tests and testability improvements
+7. **Documentation Gaps** - Missing or inadequate documentation
+8. **Refactoring Opportunities** - Code that could be simplified or reorganized
+
+Return ONLY valid JSON in this format:
+{
+  "code_reviews": [
+    {
+      "file_name": "main.py",
+      "language": "Python",
+      "overall_quality": "Good",
+      "quality_score": 7.5,
+      "security_issues": [
+        {
+          "severity": "High",
+          "issue": "SQL injection vulnerability in user input handling",
+          "line_reference": "Lines 45-52",
+          "recommendation": "Use parameterized queries or ORM methods",
+          "example_fix": "cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))"
+        }
+      ],
+      "performance_issues": [
+        {
+          "severity": "Medium", 
+          "issue": "Inefficient database queries in loop",
+          "line_reference": "Lines 78-85",
+          "recommendation": "Use batch operations or optimize with joins",
+          "estimated_improvement": "70% faster execution"
+        }
+      ],
+      "best_practice_violations": [
+        {
+          "severity": "Low",
+          "issue": "Missing type hints for function parameters",
+          "line_reference": "Function at line 23",
+          "recommendation": "Add type annotations for better code clarity",
+          "example_fix": "def process_data(data: List[Dict[str, Any]]) -> Optional[str]:"
+        }
+      ],
+      "architecture_suggestions": [
+        {
+          "area": "Separation of Concerns",
+          "issue": "Business logic mixed with data access code",
+          "recommendation": "Extract business logic into separate service layer",
+          "benefits": ["Better testability", "Improved maintainability", "Cleaner code structure"]
+        }
+      ],
+      "testing_recommendations": [
+        {
+          "type": "Unit Tests",
+          "missing_coverage": "Data processing functions lack unit tests",
+          "priority": "High",
+          "suggestion": "Add pytest tests for core business logic functions"
+        }
+      ],
+      "documentation_gaps": [
+        {
+          "type": "Function Documentation",
+          "missing": "API endpoint functions missing docstrings",
+          "recommendation": "Add comprehensive docstrings with parameters, return types, and examples"
+        }
+      ],
+      "refactoring_opportunities": [
+        {
+          "area": "Code Duplication",
+          "issue": "Similar validation logic repeated in multiple functions",
+          "recommendation": "Extract common validation into reusable utility functions",
+          "estimated_loc_reduction": "~50 lines"
+        }
+      ],
+      "positive_aspects": [
+        "Good error handling implementation",
+        "Consistent naming conventions",
+        "Proper use of logging"
+      ],
+      "improvement_priority": "High",
+      "estimated_effort": "2-3 days",
+      "confidence": 0.90
+    }
+  ],
+  "repository_summary": {
+    "overall_assessment": "Well-structured project with solid foundation but needs security and performance improvements",
+    "key_strengths": ["Good project structure", "Consistent coding style", "Comprehensive error handling"],
+    "critical_issues": ["Security vulnerabilities", "Performance bottlenecks"],
+    "recommended_next_steps": [
+      "Address high-severity security issues immediately",
+      "Implement comprehensive testing strategy", 
+      "Add performance monitoring and optimization",
+      "Update documentation and add API documentation"
+    ],
+    "technology_recommendations": [
+      "Consider migrating to async/await for I/O operations",
+      "Implement caching strategy for frequently accessed data",
+      "Add CI/CD pipeline for automated testing and deployment"
+    ]
+  }
+}"""
+        
+        return [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Review and analyze this code for improvements:\n\n{content}"}
+        ]
+    
     def _create_outline_prompt(self, summaries: List[str]) -> List[Dict[str, str]]:
         """Create prompt for generating document collection outline."""
         system_prompt = """You are a document organizer. Create a comprehensive outline from document summaries.
@@ -316,6 +429,8 @@ Return ONLY valid JSON in this format:
                     messages = self._create_medical_prompt(chunk.content)
                 elif mode == 'life':
                     messages = self._create_life_history_prompt(chunk.content)
+                elif mode == 'code':
+                    messages = self._create_code_review_prompt(chunk.content)
                 else:
                     raise GPTError(f"Unknown processing mode: {mode}")
                 

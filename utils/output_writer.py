@@ -20,7 +20,7 @@ except ImportError:
     DOCX_AVAILABLE = False
 
 from .processor import ConsolidatedData
-from .models import MedicalRecord, LifeHistoryRecord
+from .models import MedicalRecord, LifeHistoryRecord, CodeReviewRecord
 from .azure_gpt import GPTResponse
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class OutputWriter:
         
         Args:
             consolidated_data: Consolidated and deduplicated data
-            mode: Processing mode ('medical' or 'life')
+            mode: Processing mode ('medical', 'life', or 'code')
             outline_data: Document collection outline
             raw_responses: Raw GPT responses for JSON backup
             
@@ -101,6 +101,16 @@ class OutputWriter:
                 
                 if DOCX_AVAILABLE:
                     docx_files = self.write_life_docx(consolidated_data)
+                    generated_files["docx"].extend(docx_files)
+            
+            elif mode == 'code':
+                md_files = self.write_code_markdown(consolidated_data)
+                csv_files = self.write_code_csv(consolidated_data)
+                generated_files["markdown"].extend(md_files)
+                generated_files["csv"].extend(csv_files)
+                
+                if DOCX_AVAILABLE:
+                    docx_files = self.write_code_docx(consolidated_data)
                     generated_files["docx"].extend(docx_files)
             
             # Backup raw JSON responses
@@ -554,6 +564,130 @@ class OutputWriter:
         except Exception as e:
             logger.error(f"Failed to write processing metadata: {e}")
             return []
+
+    def write_code_markdown(self, data: ConsolidatedData) -> List[str]:
+        """Write code review analysis to Markdown format."""
+        md_file = self.md_dir / f"code_review_{self.timestamp}.md"
+        md_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(md_file, 'w', encoding='utf-8') as f:
+            f.write(f"# Code Review Analysis Report\n\n")
+            f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"**Total Files Reviewed:** {len(data.code_review_records)}\n")
+            f.write(f"**Source Files:** {len(data.source_files)}\n\n")
+            
+            # Individual File Reviews
+            f.write(f"## File Reviews\n\n")
+            
+            for i, record in enumerate(data.code_review_records, 1):
+                f.write(f"### {i}. {record.file_name}\n\n")
+                f.write(f"**Language:** {record.language}\n")
+                f.write(f"**Overall Quality:** {record.overall_quality}\n")
+                f.write(f"**Quality Score:** {record.quality_score}/10\n")
+                f.write(f"**Improvement Priority:** {record.improvement_priority}\n")
+                f.write(f"**Estimated Effort:** {record.estimated_effort}\n\n")
+                
+                # Security Issues
+                if record.security_issues:
+                    f.write(f"**🔒 Security Issues:**\n")
+                    for issue in record.security_issues:
+                        f.write(f"- **{issue.get('severity', 'Unknown')}:** {issue.get('issue', 'N/A')}\n")
+                        f.write(f"  - *Location:* {issue.get('line_reference', 'N/A')}\n")
+                        f.write(f"  - *Fix:* {issue.get('recommendation', 'N/A')}\n")
+                    f.write(f"\n")
+                
+                # Performance Issues
+                if record.performance_issues:
+                    f.write(f"**⚡ Performance Issues:**\n")
+                    for issue in record.performance_issues:
+                        f.write(f"- **{issue.get('severity', 'Unknown')}:** {issue.get('issue', 'N/A')}\n")
+                        f.write(f"  - *Location:* {issue.get('line_reference', 'N/A')}\n")
+                        f.write(f"  - *Fix:* {issue.get('recommendation', 'N/A')}\n")
+                    f.write(f"\n")
+                
+                # Positive Aspects
+                if record.positive_aspects:
+                    f.write(f"**✅ Positive Aspects:**\n")
+                    for aspect in record.positive_aspects:
+                        f.write(f"- {aspect}\n")
+                    f.write(f"\n")
+                
+                f.write(f"**Confidence:** {record.confidence:.2f}\n\n")
+                f.write(f"---\n\n")
+        
+        logger.info(f"Generated code review markdown: {md_file}")
+        return [str(md_file)]
+
+    def write_code_csv(self, data: ConsolidatedData) -> List[str]:
+        """Write code review data to CSV format."""
+        csv_file = self.csv_dir / f"code_review_{self.timestamp}.csv"
+        csv_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            
+            # Write header
+            writer.writerow([
+                'File Name', 'Language', 'Overall Quality', 'Quality Score',
+                'Security Issues Count', 'Performance Issues Count', 
+                'Architecture Suggestions Count', 'Positive Aspects Count',
+                'Improvement Priority', 'Estimated Effort', 'Confidence'
+            ])
+            
+            # Write data rows
+            for record in data.code_review_records:
+                writer.writerow([
+                    record.file_name,
+                    record.language,
+                    record.overall_quality,
+                    record.quality_score,
+                    len(record.security_issues),
+                    len(record.performance_issues),
+                    len(record.architecture_suggestions),
+                    len(record.positive_aspects),
+                    record.improvement_priority,
+                    record.estimated_effort,
+                    record.confidence
+                ])
+        
+        logger.info(f"Generated code review CSV: {csv_file}")
+        return [str(csv_file)]
+
+    def write_code_docx(self, data: ConsolidatedData) -> List[str]:
+        """Write code review analysis to DOCX format."""
+        if not DOCX_AVAILABLE:
+            logger.warning("python-docx not available, skipping DOCX generation")
+            return []
+        
+        docx_file = self.docx_dir / f"code_review_{self.timestamp}.docx"
+        docx_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        doc = Document()
+        
+        # Title
+        title = doc.add_heading('Code Review Analysis Report', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+        # File Reviews
+        doc.add_heading('File Reviews', level=1)
+        
+        for i, record in enumerate(data.code_review_records, 1):
+            doc.add_heading(f'{i}. {record.file_name}', level=2)
+            
+            # Basic info
+            doc.add_paragraph(f"Language: {record.language}")
+            doc.add_paragraph(f"Quality Score: {record.quality_score}/10")
+            doc.add_paragraph(f"Priority: {record.improvement_priority}")
+            
+            # Positive aspects
+            if record.positive_aspects:
+                doc.add_heading('Positive Aspects', level=3)
+                for aspect in record.positive_aspects:
+                    doc.add_paragraph(aspect, style='List Bullet')
+        
+        doc.save(str(docx_file))
+        logger.info(f"Generated code review DOCX: {docx_file}")
+        return [str(docx_file)]
 
 
 def is_docx_available() -> bool:
