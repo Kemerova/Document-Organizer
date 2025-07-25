@@ -393,8 +393,10 @@ async def process_documents(args: argparse.Namespace) -> None:
         
         if args.mode == 'medical':
             print(f"  Medical records: {len(consolidated_data.medical_records)}")
-        else:
+        elif args.mode == 'life':
             print(f"  Life history records: {len(consolidated_data.life_history_records)}")
+        elif args.mode == 'code':
+            print(f"  Code review records: {len(consolidated_data.code_review_records)}")
         
         print(f"  Deduplication merges: {dedup_summary['total_merges']}")
         print(f"  Output files: {total_files}")
@@ -419,7 +421,7 @@ def main() -> None:
     
     # Validate required arguments
     if not args.mode:
-        print("Error: --mode is required (medical or life)")
+        print("Error: --mode is required (medical, life, or code)")
         sys.exit(1)
     
     if not args.input:
